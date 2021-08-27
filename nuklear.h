@@ -322,6 +322,14 @@ extern "C" {
   #endif
 #endif
 
+//Tooltip offset
+#ifndef NK_TOOLTIP_OFFSET_X
+    #define NK_TOOLTIP_OFFSET_X 1
+#endif
+#ifndef NK_TOOLTIP_OFFSET_Y
+    #define NK_TOOLTIP_OFFSET_Y 1
+#endif
+
 /*
  * ===============================================================
  *
@@ -1420,6 +1428,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// nk_window_get_content_region_min    | Returns the upper rectangle position of the currently visible and non-clipped space inside the currently processed window
 /// nk_window_get_content_region_max    | Returns the upper rectangle position of the currently visible and non-clipped space inside the currently processed window
 /// nk_window_get_content_region_size   | Returns the size of the currently visible and non-clipped space inside the currently processed window
+/// nk_window_get_content_region_and_header | Returns the position and size of the currently visible and non-clipped space inside the currently processed window region including header.
 /// nk_window_get_canvas                | Returns the draw command buffer. Can be used to draw custom widgets
 /// nk_window_get_scroll                | Gets the scroll offset of the current window
 /// nk_window_has_focus                 | Returns if the currently processed window is currently active
@@ -1720,6 +1729,25 @@ NK_API struct nk_vec2 nk_window_get_content_region_max(struct nk_context*);
 /// Returns `nk_vec2` struct with size the visible space inside the current window
 */
 NK_API struct nk_vec2 nk_window_get_content_region_size(struct nk_context*);
+/*/// #### nk_window_get_content_region_and_header
+/// Returns the position and size of the currently visible and non-clipped space
+/// inside the currently processed window region including header.
+///
+/// !!! WARNING
+///     Only call this function between calls `nk_begin_xxx` and `nk_end`
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// struct nk_window_get_content_region_and_header(struct nk_context *ctx);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+///
+/// Returns `nk_rect` struct with screen position and size (no scrollbar offset)
+/// of the visible space inside the current window region including header.
+*/
+NK_API struct nk_rect nk_window_get_content_region_and_header(struct nk_context*);
 /*/// #### nk_window_get_canvas
 /// Returns the draw command buffer. Can be used to draw custom widgets
 /// !!! WARNING
@@ -20311,6 +20339,17 @@ nk_window_get_content_region_size(struct nk_context *ctx)
     if (!ctx || !ctx->current) return nk_vec2(0,0);
     return nk_vec2(ctx->current->layout->clip.w, ctx->current->layout->clip.h);
 }
+NK_API struct nk_rect
+nk_window_get_content_region_and_header(struct nk_context *ctx)
+{
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    if (!ctx || !ctx->current) return nk_rect(0,0,0,0);
+    return nk_rect(ctx->current->layout->clip.x,
+        ctx->current->layout->clip.y - ctx->current->layout->header_height,
+        ctx->current->layout->clip.w,
+        ctx->current->layout->clip.h + ctx->current->layout->header_height);
+}
 NK_API struct nk_command_buffer*
 nk_window_get_canvas(struct nk_context *ctx)
 {
@@ -29388,8 +29427,8 @@ nk_tooltip_begin(struct nk_context *ctx, float width)
 
     w = nk_iceilf(width);
     h = nk_iceilf(nk_null_rect.h);
-    x = nk_ifloorf(in->mouse.pos.x + 1) - (int)win->layout->clip.x;
-    y = nk_ifloorf(in->mouse.pos.y + 1) - (int)win->layout->clip.y;
+    x = nk_ifloorf(in->mouse.pos.x + NK_TOOLTIP_OFFSET_X) - (int)win->layout->clip.x;
+    y = nk_ifloorf(in->mouse.pos.y + NK_TOOLTIP_OFFSET_Y) - (int)win->layout->clip.y;
 
     bounds.x = (float)x;
     bounds.y = (float)y;
@@ -29524,8 +29563,9 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [x]: Major version with API and library breaking changes
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
-///
-/// - 2021/08/17 (4.08.0) - Implemented 9-slice scaling support for widget styles
+/// - 2021/08/26 (4.09.0) - Added function to retrieve currently processed window region including header.
+///                       - Added a offset define to tooltip_begin
+/// - 2021/08/17 (4.08.5) - Implemented 9-slice scaling support for widget styles
 /// - 2021/08/16 (4.07.5) - Replace usage of memset in nk_font_atlas_bake with NK_MEMSET
 /// - 2021/08/15 (4.07.4) - Fix conversion and sign conversion warnings
 /// - 2021/08/08 (4.07.3) - Fix crash when baking merged fonts
