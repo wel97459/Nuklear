@@ -1428,6 +1428,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// nk_window_get_content_region_min    | Returns the upper rectangle position of the currently visible and non-clipped space inside the currently processed window
 /// nk_window_get_content_region_max    | Returns the upper rectangle position of the currently visible and non-clipped space inside the currently processed window
 /// nk_window_get_content_region_size   | Returns the size of the currently visible and non-clipped space inside the currently processed window
+/// nk_window_get_header_region         | Returns the position and size of header region.
 /// nk_window_get_content_region_and_header | Returns the position and size of the currently visible and non-clipped space inside the currently processed window region including header.
 /// nk_window_get_canvas                | Returns the draw command buffer. Can be used to draw custom widgets
 /// nk_window_get_scroll                | Gets the scroll offset of the current window
@@ -1729,6 +1730,23 @@ NK_API struct nk_vec2 nk_window_get_content_region_max(struct nk_context*);
 /// Returns `nk_vec2` struct with size the visible space inside the current window
 */
 NK_API struct nk_vec2 nk_window_get_content_region_size(struct nk_context*);
+/*/// #### nk_window_get_header_region
+/// Returns the position and size of header region.
+///
+/// !!! WARNING
+///     Only call this function between calls `nk_begin_xxx` and `nk_end`
+///
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+/// struct nk_window_get_header_region(struct nk_context *ctx);
+/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+///
+/// Parameter   | Description
+/// ------------|-----------------------------------------------------------
+/// __ctx__     | Must point to an previously initialized `nk_context` struct
+///
+/// Returns `nk_rect` struct with screen position and size of header region.
+*/
+NK_API struct nk_rect nk_window_get_header_region(struct nk_context*);
 /*/// #### nk_window_get_content_region_and_header
 /// Returns the position and size of the currently visible and non-clipped space
 /// inside the currently processed window region including header.
@@ -20340,6 +20358,16 @@ nk_window_get_content_region_size(struct nk_context *ctx)
     return nk_vec2(ctx->current->layout->clip.w, ctx->current->layout->clip.h);
 }
 NK_API struct nk_rect
+nk_window_get_header_region(struct nk_context *ctx)
+{
+    NK_ASSERT(ctx);
+    NK_ASSERT(ctx->current);
+    if (!ctx || !ctx->current) return nk_rect(0,0,0,0);
+    return nk_rect(ctx->current->layout->clip.x,
+        ctx->current->layout->clip.y - ctx->current->layout->header_height,
+        ctx->current->layout->clip.w, ctx->current->layout->header_height);
+}
+NK_API struct nk_rect
 nk_window_get_content_region_and_header(struct nk_context *ctx)
 {
     NK_ASSERT(ctx);
@@ -29563,6 +29591,7 @@ nk_tooltipfv(struct nk_context *ctx, const char *fmt, va_list args)
 ///    - [x]: Major version with API and library breaking changes
 ///    - [yy]: Minor version with non-breaking API and library changes
 ///    - [zz]: Bug fix version with no direct changes to API
+/// - 2021/08/27 (4.10.0) - Added function to retrieve currently processed window's header region.
 /// - 2021/08/26 (4.09.0) - Added function to retrieve currently processed window region including header.
 ///                       - Added a offset define to tooltip_begin
 /// - 2021/08/17 (4.08.5) - Implemented 9-slice scaling support for widget styles

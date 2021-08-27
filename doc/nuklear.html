@@ -848,6 +848,7 @@ nk_window_get_content_region        | Returns the position and size of the curre
 nk_window_get_content_region_min    | Returns the upper rectangle position of the currently visible and non-clipped space inside the currently processed window
 nk_window_get_content_region_max    | Returns the upper rectangle position of the currently visible and non-clipped space inside the currently processed window
 nk_window_get_content_region_size   | Returns the size of the currently visible and non-clipped space inside the currently processed window
+nk_window_get_header_region         | Returns the position and size of header region.
 nk_window_get_content_region_and_header | Returns the position and size of the currently visible and non-clipped space inside the currently processed window region including header.
 nk_window_get_canvas                | Returns the draw command buffer. Can be used to draw custom widgets
 nk_window_get_scroll                | Gets the scroll offset of the current window
@@ -1057,6 +1058,17 @@ Parameter   | Description
 ------------|-----------------------------------------------------------
 __ctx__     | Must point to an previously initialized `nk_context` struct
 Returns `nk_vec2` struct with size the visible space inside the current window
+#### nk_window_get_header_region
+Returns the position and size of header region.
+!!! WARNING
+    Only call this function between calls `nk_begin_xxx` and `nk_end`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
+struct nk_window_get_header_region(struct nk_context *ctx);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Parameter   | Description
+------------|-----------------------------------------------------------
+__ctx__     | Must point to an previously initialized `nk_context` struct
+Returns `nk_rect` struct with screen position and size of header region.
 #### nk_window_get_content_region_and_header
 Returns the position and size of the currently visible and non-clipped space
 inside the currently processed window region including header.
@@ -2328,6 +2340,7 @@ X...XXXXXXXXXXXXX...X -           "
    - [x]: Major version with API and library breaking changes
    - [yy]: Minor version with non-breaking API and library changes
    - [zz]: Bug fix version with no direct changes to API
+- 2021/08/27 (4.10.0) - Added function to retrieve currently processed window's header region.
 - 2021/08/26 (4.09.0) - Added function to retrieve currently processed window region including header.
                       - Added a offset define to tooltip_begin
 - 2021/08/17 (4.08.5) - Implemented 9-slice scaling support for widget styles
