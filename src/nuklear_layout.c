@@ -740,8 +740,10 @@ nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
     NK_ASSERT(ctx);
     NK_ASSERT(ctx->current);
     NK_ASSERT(ctx->current->layout);
-    if (!ctx || !ctx->current || !ctx->current->layout)
+    if (!ctx || !ctx->current || !ctx->current->layout) {
+        *bounds = nk_rect(0,0,0,0);
         return;
+    }
 
     win = ctx->current;
     layout = win->layout;
@@ -758,4 +760,9 @@ nk_layout_peek(struct nk_rect *bounds, struct nk_context *ctx)
     layout->at_y = y;
     layout->row.index = index;
 }
-
+NK_API void
+nk_spacer(struct nk_context *ctx )
+{
+    struct nk_rect dummy_rect = { 0, 0, 0, 0 };
+    nk_panel_alloc_space( &dummy_rect, ctx );
+}
